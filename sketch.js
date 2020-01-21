@@ -7,17 +7,24 @@ let brain;
 let state = 'waiting';
 let targetLabel;
 
+let bgMusic;
+
+function preload() {
+    bgMusic = loadSound('bgMusic.mp3');
+}
+
+
 
 function getPoses(resposes) {
     poses = resposes;
     if (poses.length > 0) {
         if (state == 'collecting') {
             pose = poses[0].pose;
-            console.log(pose.keypoints[0]);
+            // console.log(pose.keypoints[0]);
             let inputs = [];
             for (let i = 0; i < pose.keypoints.length; i++) {
                 let keypoint = pose.keypoints[i];
-                console.log(keypoint);
+                // console.log(keypoint);
 
                 // let x = pose.keypoints[i].position.x;
                 // let y = pose.keypoints[i].position.y;
@@ -83,7 +90,10 @@ function setState() {
 }
 
 function setup() {
-    createCanvas(400, 400);
+    bgMusic.setVolume(0.5);
+    bgMusic.loop();
+
+    createCanvas(640, 480);
     video = createCapture(VIDEO);
     video.size(width, height);
     video.hide();
