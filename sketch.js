@@ -45,8 +45,10 @@ function getPoses(resposes) {
 
 function setup() {
     bgMusic.setVolume(0.5);
+setTimeout(()=>{
     bgMusic.loop();
 
+},100);
     createCanvas(640, 480);
     video = createCapture(VIDEO);
     video.size(width, height);
@@ -103,12 +105,13 @@ function gotResult(error, results) {
 
     }
     if (targetLabel!=prevLabel) {
+        console.log(targetLabel);
+        prevLabel = targetLabel;
         if(targetLabel == 'i'){
             inihahaMusic.setVolume(0.5);
             inihahaMusic.play();
-        }
-        console.log(targetLabel);
-        prevLabel = targetLabel;
+        }   
+        
     }
     iniha();
 

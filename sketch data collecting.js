@@ -55,7 +55,7 @@ function keyPressed() {
                 console.log(state);
 
                 p2 = new Promise((res, rej) => {
-                    setTimeout(res, 5000);
+                    setTimeout(res, 10000);
                 })
                     .then(() => {
                         setState();
@@ -90,8 +90,8 @@ function setState() {
 }
 
 function setup() {
-    bgMusic.setVolume(0.5);
-    bgMusic.loop();
+    // bgMusic.setVolume(0.5);
+    // bgMusic.loop();
 
     createCanvas(640, 480);
     video = createCapture(VIDEO);
