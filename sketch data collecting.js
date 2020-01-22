@@ -4,9 +4,9 @@ let poses = [];
 
 let skeleton;
 let brain;
-let state = 'collecting';
+let state = 'waiting';
 let targetLabel;
-let pose;
+
 let bgMusic;
 
 function preload() {
@@ -21,22 +21,73 @@ function getPoses(resposes) {
         if (state == 'collecting') {
             pose = poses[0].pose;
             // console.log(pose.keypoints[0]);
-            // let inputs = [];
-            // for (let i = 0; i < pose.keypoints.length; i++) {
-            //     let keypoint = pose.keypoints[i];
-            //     // console.log(keypoint);
+            let inputs = [];
+            for (let i = 0; i < pose.keypoints.length; i++) {
+                let keypoint = pose.keypoints[i];
+                // console.log(keypoint);
 
+                // let x = pose.keypoints[i].position.x;
+                // let y = pose.keypoints[i].position.y;
+                inputs.push(keypoint.position.x);
+                inputs.push(keypoint.position.y);
 
-            //     inputs.push(keypoint.position.x);
-            //     inputs.push(keypoint.position.y);
-
-            // }
-            // let target = [targetLabel];
-            // brain.addData(inputs, target);
+            }
+            let target = [targetLabel];
+            brain.addData(inputs, target);
         }
     }
 }
 
+
+function keyPressed() {
+
+    if (key == 's') {
+        brain.saveData();
+    }
+    else {
+        targetLabel = key;
+        console.log(key);
+        p1 = new Promise((res, rej) => {
+            setTimeout(res, 5000);
+        })
+            .then(() => {
+                setState();
+                console.log(state);
+
+                p2 = new Promise((res, rej) => {
+                    setTimeout(res, 5000);
+                })
+                    .then(() => {
+                        setState();
+                        console.log(state);
+
+                    });
+            });
+
+        // setTimeout(() => {
+        //     setState();
+        //     console.log(state);
+
+        //     setTimeout(() => {
+        //         setState();
+        //         console.log(state);
+        //     }, 5000);
+
+        // }, 5000);
+
+
+
+
+    }
+}
+function setState() {
+    if (state == 'collecting') {
+        state = 'waiting';
+    }
+    else {
+        state = 'collecting';
+    }
+}
 
 function setup() {
     bgMusic.setVolume(0.5);
@@ -46,58 +97,15 @@ function setup() {
     video = createCapture(VIDEO);
     video.size(width, height);
     video.hide();
-
     poseNet = ml5.poseNet(video, modelReady);
     poseNet.on('pose', getPoses);
-
     let options = {
         inputs: 34,
         outputs: 4,
         task: 'classification',
         debug: true
     }
-
-    const modelInfo = {
-        model: 'models/iniha/model.json',
-        metadata: 'models/iniha/model_meta.json',
-        weights: 'models/iniha/model.weights.bin'
-    }
     brain = ml5.neuralNetwork(options);
-    brain.load(modelInfo, brainLoaded);
-    // brain.loadData('iniha_data.json', dataReady);
-}
-
-function brainLoaded() {
-    console.log('Ini7a ready!!');
-    iniha();
-}
-
-function iniha() {
-    if (pose) {
-        let inputs = [];
-        for (let i = 0; i < pose.keypoints.length; i++) {
-            let keypoint = pose.keypoints[i];
-            // console.log(keypoint);
-
-
-            inputs.push(keypoint.position.x);
-            inputs.push(keypoint.position.y);
-
-        }
-        brain.classify(inputs, gotResult);
-
-    }
-    else {
-        setTimeout(iniha, 100);
-    }
-}
-
-function gotResult(error, results) {
-    if (results[0].confidence > 0.75) {
-        targetLabel = results[0].label;
-    }
-    console.log(targetLabel);
-    iniha();
 }
 
 function modelReady() {
