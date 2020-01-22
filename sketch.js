@@ -7,10 +7,15 @@ let brain;
 let state = 'collecting';
 let targetLabel;
 let pose;
+
 let bgMusic;
+let inihahaMusic;
+let prevLabel;
 
 function preload() {
     bgMusic = loadSound('bgMusic.mp3');
+    inihahaMusic = loadSound('inihaha.mp3');
+
 }
 
 
@@ -95,10 +100,23 @@ function iniha() {
 function gotResult(error, results) {
     if (results[0].confidence > 0.75) {
         targetLabel = results[0].label;
+
     }
-    console.log(targetLabel);
+    if (targetLabel!=prevLabel) {
+        if(targetLabel == 'i'){
+            inihahaMusic.setVolume(0.5);
+            inihahaMusic.play();
+        }
+        console.log(targetLabel);
+        prevLabel = targetLabel;
+    }
     iniha();
+
 }
+
+
+
+
 
 function modelReady() {
     select('#status').html('Model Loaded');
