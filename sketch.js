@@ -63,7 +63,7 @@ function setup() {
     poseNet.on('pose', getPoses);
 
     let options = {
-        inputs: 34,
+        inputs: 14,
         outputs: 4,
         task: 'classification',
         debug: true
