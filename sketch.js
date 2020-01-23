@@ -10,11 +10,13 @@ let pose;
 
 let bgMusic;
 let inihahaMusic;
+let inihaMusic;
 let prevLabel;
-
+let countIniha = 0;
 function preload() {
     bgMusic = loadSound('bgMusic.mp3');
     inihahaMusic = loadSound('inihaha.mp3');
+    inihaMusic = loadSound('iniha.mp3');
 
 }
 
@@ -22,6 +24,7 @@ function preload() {
 
 function getPoses(resposes) {
     poses = resposes;
+    // console.log(poses);
     if (poses.length > 0) {
         if (state == 'collecting') {
             pose = poses[0].pose;
@@ -38,6 +41,8 @@ function getPoses(resposes) {
             // }
             // let target = [targetLabel];
             // brain.addData(inputs, target);
+
+
         }
     }
 }
@@ -45,10 +50,10 @@ function getPoses(resposes) {
 
 function setup() {
     bgMusic.setVolume(0.5);
-setTimeout(()=>{
-    bgMusic.loop();
+    setTimeout(() => {
+        bgMusic.loop();
 
-},100);
+    }, 100);
     createCanvas(640, 480);
     video = createCapture(VIDEO);
     video.size(width, height);
@@ -82,13 +87,29 @@ function brainLoaded() {
 function iniha() {
     if (pose) {
         let inputs = [];
-        for (let i = 0; i < pose.keypoints.length; i++) {
-            let keypoint = pose.keypoints[i];
-            // console.log(keypoint);
+        let inp = [];
+        let nose = pose.nose;
+        let leftShoulder = pose.leftShoulder;
+        let rightShoulder = pose.rightShoulder;
+        let leftElbow = pose.leftElbow;
+        let rightElbow = pose.rightElbow;
+        let leftWrist = pose.leftWrist;
+        let rightWrist = pose.rightWrist;
+        inp.push(rightWrist);
+        inp.push(leftWrist);
+        inp.push(nose);
+        inp.push(leftShoulder);
+        inp.push(rightShoulder);
+        inp.push(leftElbow);
+        inp.push(rightElbow);
 
+        for (let i = 0; i < inp.length; i++) {
+            let keypoint = inp[i];
 
-            inputs.push(keypoint.position.x);
-            inputs.push(keypoint.position.y);
+            // let x = pose.keypoints[i].position.x;
+            // let y = pose.keypoints[i].position.y;
+            inputs.push(keypoint.x);
+            inputs.push(keypoint.y);
 
         }
         brain.classify(inputs, gotResult);
@@ -104,14 +125,24 @@ function gotResult(error, results) {
         targetLabel = results[0].label;
 
     }
-    if (targetLabel!=prevLabel) {
+    if (targetLabel != prevLabel) {
         console.log(targetLabel);
         prevLabel = targetLabel;
-        if(targetLabel == 'i'){
-            inihahaMusic.setVolume(0.5);
-            inihahaMusic.play();
-        }   
-        
+        if (targetLabel == 'i') {
+            if (countIniha % 2 == 0) {
+                inihahaMusic.setVolume(0.5);
+                inihahaMusic.play();
+            }
+            else{
+                inihaMusic.setVolume(0.5);
+                inihaMusic.play();
+            }
+            countIniha++;
+
+        }
+
+
+
     }
     iniha();
 
@@ -130,7 +161,7 @@ function draw() {
 
     // We can call both functions to draw all keypoints and the skeletons
     drawKeypoints();
-    drawSkeleton();
+    // drawSkeleton();
 }
 
 // A function to draw ellipses over the detected keypoints
