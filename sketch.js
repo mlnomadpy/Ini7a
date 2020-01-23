@@ -4,109 +4,153 @@ let poses = [];
 
 let skeleton;
 let brain;
-let state = 'waiting';
+let state = 'collecting';
 let targetLabel;
+let pose;
 
 let bgMusic;
-
+let inihahaMusic;
+let inihaMusic;
+let prevLabel;
+let countIniha = 0;
 function preload() {
     bgMusic = loadSound('bgMusic.mp3');
+    inihahaMusic = loadSound('inihaha.mp3');
+    inihaMusic = loadSound('iniha.mp3');
+
 }
 
 
 
 function getPoses(resposes) {
     poses = resposes;
+    // console.log(poses);
     if (poses.length > 0) {
         if (state == 'collecting') {
             pose = poses[0].pose;
             // console.log(pose.keypoints[0]);
-            let inputs = [];
-            for (let i = 0; i < pose.keypoints.length; i++) {
-                let keypoint = pose.keypoints[i];
-                // console.log(keypoint);
+            // let inputs = [];
+            // for (let i = 0; i < pose.keypoints.length; i++) {
+            //     let keypoint = pose.keypoints[i];
+            //     // console.log(keypoint);
 
-                // let x = pose.keypoints[i].position.x;
-                // let y = pose.keypoints[i].position.y;
-                inputs.push(keypoint.position.x);
-                inputs.push(keypoint.position.y);
 
-            }
-            let target = [targetLabel];
-            brain.addData(inputs, target);
+            //     inputs.push(keypoint.position.x);
+            //     inputs.push(keypoint.position.y);
+
+            // }
+            // let target = [targetLabel];
+            // brain.addData(inputs, target);
+
+
         }
     }
 }
 
 
-function keyPressed() {
-
-    if (key == 's') {
-        brain.saveData();
-    }
-    else {
-        targetLabel = key;
-        console.log(key);
-        p1 = new Promise((res, rej) => {
-            setTimeout(res, 5000);
-        })
-            .then(() => {
-                setState();
-                console.log(state);
-
-                p2 = new Promise((res, rej) => {
-                    setTimeout(res, 5000);
-                })
-                    .then(() => {
-                        setState();
-                        console.log(state);
-
-                    });
-            });
-
-        // setTimeout(() => {
-        //     setState();
-        //     console.log(state);
-
-        //     setTimeout(() => {
-        //         setState();
-        //         console.log(state);
-        //     }, 5000);
-
-        // }, 5000);
-
-
-
-
-    }
-}
-function setState() {
-    if (state == 'collecting') {
-        state = 'waiting';
-    }
-    else {
-        state = 'collecting';
-    }
-}
-
 function setup() {
     bgMusic.setVolume(0.5);
-    bgMusic.loop();
+    setTimeout(() => {
+        bgMusic.loop();
 
+    }, 100);
     createCanvas(640, 480);
     video = createCapture(VIDEO);
     video.size(width, height);
     video.hide();
+
     poseNet = ml5.poseNet(video, modelReady);
     poseNet.on('pose', getPoses);
+
     let options = {
-        inputs: 34,
+        inputs: 14,
         outputs: 4,
         task: 'classification',
         debug: true
     }
+
+    const modelInfo = {
+        model: 'models/iniha/model.json',
+        metadata: 'models/iniha/model_meta.json',
+        weights: 'models/iniha/model.weights.bin'
+    }
     brain = ml5.neuralNetwork(options);
+    brain.load(modelInfo, brainLoaded);
+    // brain.loadData('iniha_data.json', dataReady);
 }
+
+function brainLoaded() {
+    console.log('Ini7a ready!!');
+    iniha();
+}
+
+function iniha() {
+    if (pose) {
+        let inputs = [];
+        let inp = [];
+        let nose = pose.nose;
+        let leftShoulder = pose.leftShoulder;
+        let rightShoulder = pose.rightShoulder;
+        let leftElbow = pose.leftElbow;
+        let rightElbow = pose.rightElbow;
+        let leftWrist = pose.leftWrist;
+        let rightWrist = pose.rightWrist;
+        inp.push(rightWrist);
+        inp.push(leftWrist);
+        inp.push(nose);
+        inp.push(leftShoulder);
+        inp.push(rightShoulder);
+        inp.push(leftElbow);
+        inp.push(rightElbow);
+
+        for (let i = 0; i < inp.length; i++) {
+            let keypoint = inp[i];
+
+            // let x = pose.keypoints[i].position.x;
+            // let y = pose.keypoints[i].position.y;
+            inputs.push(keypoint.x);
+            inputs.push(keypoint.y);
+
+        }
+        brain.classify(inputs, gotResult);
+
+    }
+    else {
+        setTimeout(iniha, 100);
+    }
+}
+
+function gotResult(error, results) {
+    if (results[0].confidence > 0.75) {
+        targetLabel = results[0].label;
+
+    }
+    if (targetLabel != prevLabel) {
+        console.log(targetLabel);
+        prevLabel = targetLabel;
+        if (targetLabel == 'i') {
+            if (countIniha % 2 == 0) {
+                inihahaMusic.setVolume(0.5);
+                inihahaMusic.play();
+            }
+            else{
+                inihaMusic.setVolume(0.5);
+                inihaMusic.play();
+            }
+            countIniha++;
+
+        }
+
+
+
+    }
+    iniha();
+
+}
+
+
+
+
 
 function modelReady() {
     select('#status').html('Model Loaded');
@@ -117,7 +161,7 @@ function draw() {
 
     // We can call both functions to draw all keypoints and the skeletons
     drawKeypoints();
-    drawSkeleton();
+    // drawSkeleton();
 }
 
 // A function to draw ellipses over the detected keypoints
